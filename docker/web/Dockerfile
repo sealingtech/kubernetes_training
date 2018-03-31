@@ -8,10 +8,10 @@ RUN yum -y update
 RUN yum -y install httpd 
 #Install PHP and some addons
 RUN yum -y install php \
-    Php-mysql \
-    Php-pdo \
-    Php-gd \
-    Php-mbstring 
+    php-pdo \
+    php-gd \
+    php-mysqli \
+    php-mbstring 
 #Delete what is currently there
 RUN rm -rf /var/www/html/*
 #Copy the contents inside your current directory on your local build into the container

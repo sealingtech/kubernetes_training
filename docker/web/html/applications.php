@@ -1,9 +1,6 @@
 <?php
 
-$hostname = "172.18.0.3";
-$username = "docker_man";
-$password = "docker12345";
-$db = "applications";
+include 'config.php';
 
 $dbconnect=mysqli_connect($hostname,$username,$password,$db);
 
