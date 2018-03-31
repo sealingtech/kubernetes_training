@@ -1,6 +1,6 @@
 # Building Your Work Environment 
 ## Install Docker
-Note: The commands in the guide will be Debian based (Ubuntu).  However, docker is not limited to just this distribution and can be downloaded on most other distributions, as well as MAC OS, and Windows 10 platform. 
+Note: The commands in the guide will be Debian based (Ubuntu).  However, Docker is not limited to just this distribution and can be downloaded on most other distributions, as well as MAC OS, and Windows 10 platform. 
 
 1. First we will update our package list and install docker community edition.
 ```
@@ -51,7 +51,7 @@ For more examples and ideas, visit:
 ```
  
  
-#Creating our first Docker container
+## Creating our first Docker container
 
 We have used a default container from Docker hub, but lets make our own container.  We will use Centos for our package source and start from there.  We will then install a number of packages inside of it and then expose port 80 and 443.  Finally we will specify the executable to start when the container comes up.  
 
@@ -110,7 +110,10 @@ sudo docker image ls
   + -p Map port 80 on the local host port to the container port 80.  Your local host will listen on port 80 and forward all requests to your Docker container also listening on port 80.  When we move the Docker container to Kubernetes we will use  more robust networking options, but this works for testing.
 
 ```
-sudo docker run -td --name apache -p 80:80 stech/apache 
+#Create a user defined bridged network
+docker network create stech
+#Create our container
+sudo docker run -td --name apache --net stech -p 80:80 stech/apache 
 # show your container running
 sudo docker ps
 ```
@@ -125,7 +128,7 @@ sudo docker exec -it apache bash
 
 6. Open your web browser and browse to http://127.0.0.1/ and you should see apache serving from your container.
 
-# Building MariaDB container.
+## Building MariaDB container.
 For the database, we will simply pull from Docker hub already made images instead of building our own container.  The benefit to doing this is they are maintained inside and Docker hub and they generally have options made available to set.  The options are set as environment variables and then scripts are used to configure the container accordingly.  You can see the options available here:
 https://hub.docker.com/_/mariadb/
 
@@ -160,7 +163,7 @@ docker build -t stech/mariadb .
 
 4. Run the following commands to create a container called mariadb using the mariadb image from Docker Hub.
 ```
-docker run -itd --name mariadb stech/mariadb
+docker run -itd --name mariadb --net stech stech/mariadb
 ```
 
 5. Lets get a shell to see how the container was configured
@@ -207,33 +210,29 @@ root       182   177  0 17:16 pts/1    00:00:00 ps -ef
 
 8. To escape from the terminal you press ctrl+a, then while still holding ctrl, hit d
 
-# Connecting the two containers
-We haven't worried about networking (the name is called "bridge", though you can create your own). Up until this point but there is a bridge network running that each of these containers are connecting to.  We don't know the IPs that are given to each of the containers which is an issue to automation.  To solve this issue we can "link" the containers which will allow the apache container to find the IP address of the mariadb container.  Note that networking will completely change once we utilize Kubernetes, but this will work for testing purposes.
+## Connecting the two containers
+We haven't really looked at networking up until this point.  We have been connecting the docker containers to a bridge we created called stech.  All containers on this network can communicate to one another as if they were all connected to a switch.  Notice that we haven't set IPs, netmasks or any of the details up until this point. The way we can lookup container IPs is through a DNS server that Docker runs.  We are able to lookup the names of containers through DNS to get there IPs.  The networking will change when we send these containers to the cloud using Kubernetes, but this works well for testing.
 
-1. Stop the apache container and delete it.
-
-```
-docker stop apache
-docker rm apache
-```
-
-2. Start apache as last time, but this time we will add the link option which will allow the apache container to look up the mariadb container IP by the name mariadb.
+1. To view docker networking information
 
 ```
-sudo docker run -td --name apache -p 80:80 --link mariadb:mariadb stech/apache 
+docker network inspect stech
 ```
 
-3. Lets see what did, if you open a terminal to the apache container you will see that it added an entry to /etc/hosts inside the container with the correct internal IP address. You can see our configuration was set to look up mariadb as the host name.
+2. Lets pull up the apache containers terminal and run ping to mariadb to make sure it is working (ctrl-c when done)
+
 ```
 docker exec -it apache bash
-cat /etc/hosts
+ping mariadb
+```
+
+3. You can see that our simple web application is configured to lookup the mariadb hostname.  
+
+```
 cat /var/www/html/config.php
 ```
 
-4.  To test our container, simply open a web browser and go to:
+4.  Lets make sure our simple web application works open up a web browser and go to (remember that we mapped localhost port 80 to port 80 inside of the container when we ran the run command):
 http://127.0.0.1/applications.html
 
-5.  Enter in information and select Submit.  This will connect out to the database and send information accordingly.
-
-Next class we are going to SEND IT to the CLOUD!!!!!  These containers were useful but now we need make them ready for the enterprise.
-
+5. Enter in information in the web app and then select "submit".    You should get the message "Thanks for your application!" which verifies we have written data to the database.
