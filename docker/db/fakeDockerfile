@@ -1,0 +1,15 @@
+FROM centos:centos7
+
+MAINTAINER sealing tech
+
+RUN  yum -y install mariadb-server mariadb
+
+EXPOSE 3306
+
+#RUN systemctl enable mariadb
+#RUN systemctl start mariadb
+
+#CMD ["usr/local/bin/mysqld","-D","FOREGROUND"]
+
+
+
