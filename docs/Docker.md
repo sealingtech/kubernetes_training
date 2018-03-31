@@ -125,7 +125,7 @@ sudo docker exec -it apache bash
 
 6. Open your web browser and browse to http://127.0.0.1/ and you should see apache serving from your container.
 
-#Building MariaDB container.
+# Building MariaDB container.
 For the database, we will simply pull from Docker hub already made images instead of building our own container.  The benefit to doing this is they are maintained inside and Docker hub and they generally have options made available to set.  The options are set as environment variables and then scripts are used to configure the container accordingly.  You can see the options available here:
 https://hub.docker.com/_/mariadb/
 
@@ -158,17 +158,17 @@ COPY createtable.sql /docker-entrypoint-initdb.d/
 docker build -t stech/mariadb .
 ```
 
-2. Run the following commands to create a container called mariadb using the mariadb image from Docker Hub.
+4. Run the following commands to create a container called mariadb using the mariadb image from Docker Hub.
 ```
 docker run -itd --name mariadb stech/mariadb
 ```
 
-1. Lets get a shell to see how the container was configured
+5. Lets get a shell to see how the container was configured
 ```
 docker exec -it mariadb bash
 ```
 
-3. Inside the container we can see how environment variables were set from the options we set on the command line:
+6. Inside the container we can see how environment variables were set from the options we set on the command line:
 ```
 env
 ```
@@ -192,7 +192,7 @@ MYSQL_ROOT_PASSWORD=password12345
 _=/usr/bin/env
 ```
 
-4. View processes, notice that the container has very little going on, when we aren't accessing the shell only Mysqld would be running:
+7. View processes, notice that the container has very little going on, when we aren't accessing the shell only Mysqld would be running:
 ```
 ps -ef
 ```
@@ -205,11 +205,9 @@ root       177     0  0 17:13 pts/1    00:00:00 bash
 root       182   177  0 17:16 pts/1    00:00:00 ps -ef
 ```
 
-5. 
+8. To escape from the terminal you press ctrl+a, then while still holding ctrl, hit d
 
-. To escape from the terminal you press ctrl+a, then while still holding ctrl, hit d
-
-#Connecting the two containers
+# Connecting the two containers
 We haven't worried about networking (the name is called "bridge", though you can create your own). Up until this point but there is a bridge network running that each of these containers are connecting to.  We don't know the IPs that are given to each of the containers which is an issue to automation.  To solve this issue we can "link" the containers which will allow the apache container to find the IP address of the mariadb container.  Note that networking will completely change once we utilize Kubernetes, but this will work for testing purposes.
 
 1. Stop the apache container and delete it.
@@ -237,5 +235,5 @@ http://127.0.0.1/applications.html
 
 5.  Enter in information and select Submit.  This will connect out to the database and send information accordingly.
 
-Next class we are going to SEND IT to the CLOUD!!!!!  These containers were useful but now we need 
+Next class we are going to SEND IT to the CLOUD!!!!!  These containers were useful but now we need make them ready for the enterprise.
 
