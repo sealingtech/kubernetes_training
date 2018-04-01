@@ -1,0 +1,135 @@
+##Deploy Database Pod
+```
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dbtraining
+  namespace: default
+  #Labels are used as "tags" that can be referenced in other object (like services).  Labels can be anything, environment, beta or whatever you want.
+  labels:
+    app: dbtraining
+spec:
+  #Create two pods inside of the cluster, and ensure two are always running
+  replicas: 1
+  #This spec applies to Deployments with the label app=db
+  selector:
+    matchLabels:
+      app: dbtraining
+  template:
+    metadata:
+      name: dbtraining
+      labels:
+        app: dbtraining
+    #This spect has these containers
+    spec:
+      containers:
+      - name: dbtraining
+        imagePullPolicy: Always
+        image: dlohin/stechtraining_db:1
+        ports:
+        - containerPort: 3306
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+```
+   
+##Deploy Database Service      
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-service
+  namespace: default
+spec:
+  ports:
+    - name: mariadb
+      #Listen on 3306 and then forward the request to port 3306 in the pod
+      port: 3306
+      targetPort: 3306
+  #Send requests in a load balanced fashion to containers with the selector app=dbtraining
+  selector:
+    app: dbtraining
+```
+
+##Deploy Web Pod
+
+```
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webtraining
+  namespace: default
+  labels:
+    app: webtraining
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: webtraining
+  template:
+    metadata:
+      name: webtraining
+      labels:
+        app: webtraining
+    spec:
+      containers:
+      - name: webtraining
+        imagePullPolicy: Always
+        image: dlohin/stechtraining_web:1
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 15
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+```
+
+##Deploy web Service
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  namespace: default
+spec:
+  ports:
+    - name: http
+      #Listen on 3306 and then forward the request to port 3306 in the pod
+      port: 80
+      targetPort: 80
+  #Send requests in a load balanced fashion to containers with the selector app=dbtraining
+  selector:
+    app: webtraining
+```
+
+##Configure Ingress
+
+```
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: web-service-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: test.lohin.lan
+    http:
+      paths:
+      - backend:
+          serviceName: web-service
+          servicePort: 80
+```

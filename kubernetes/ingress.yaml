@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: web-service-ingress 
+  namespace: default 
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: test.lohin.lan
+    http:
+      paths:
+      - backend:
+          serviceName: web-service 
+          servicePort: 80

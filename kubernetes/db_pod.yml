@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dbtraining 
+  namespace: default
+  #Labels are used as "tags" that can be referenced in other object (like services).  Labels can be anything, environment, beta or whatever you want.
+  labels:
+    app: dbtraining
+spec:
+  #Create two pods inside of the cluster, and ensure two are always running
+  replicas: 1 
+  #This spec applies to Deployments with the label app=db
+  selector:
+    matchLabels:
+      app: dbtraining
+  template:
+    metadata:
+      name: dbtraining
+      labels:
+        app: dbtraining
+    #This spect has these containers
+    spec:
+      containers:
+      - name: dbtraining 
+        imagePullPolicy: Always
+        image: dlohin/stechtraining_db:1
+        ports:
+        - containerPort: 3306 
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst

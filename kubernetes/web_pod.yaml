@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webtraining 
+  namespace: default
+  labels:
+    app: webtraining 
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: webtraining 
+  template:
+    metadata:
+      name: webtraining 
+      labels:
+        app: webtraining 
+    spec:
+      containers:
+      - name: webtraining 
+        imagePullPolicy: Always
+        image: dlohin/stechtraining_web:1 
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80 
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 15
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
