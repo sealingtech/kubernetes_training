@@ -22,8 +22,18 @@ spec:
     spec:
       containers:
       - name: dbtraining 
+        #Remember those environment varialbe we set in Docker?  Same thing here...
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "SuperSecretPassword"
+        - name: MYSQL_DATABASE
+          value: "applications"
+        - name: MYSQL_USER
+          value: "docker_man"
+        - name: MYSQL_PASSWORD
+          value: "OnlySlightlySecret"
         imagePullPolicy: Always
-        image: dlohin/stechtraining_db:1
+        image: dlohin/stechtraining_db:1 
         ports:
         - containerPort: 3306 
       restartPolicy: Always

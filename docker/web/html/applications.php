@@ -1,6 +1,6 @@
 <?php
 
-include 'config.php';
+include 'config/config.php';
 
 $dbconnect=mysqli_connect($hostname,$username,$password,$db);
 

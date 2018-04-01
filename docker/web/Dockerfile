@@ -16,6 +16,8 @@ RUN yum -y install php \
 RUN rm -rf /var/www/html/*
 #Copy the contents inside your current directory on your local build into the container
 COPY html/ /var/www/html/
+#This will fix up the Apache configuration to ensure logs to to STDOUT
+COPY httpd.conf /etc/httpd/conf/httpd.conf 
 #We will expose two networking ports to the container
 EXPOSE 80 443 
 #When the container starts start up Apache as the process

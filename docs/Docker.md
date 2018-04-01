@@ -73,25 +73,27 @@ Output:
 
 ```
 #Start with Centos for the package source
-FROM centos:centos7 
+FROM centos:centos7
 #Who maintains the image (could be your email)
-MAINTAINER Stech Training 
+MAINTAINER Stech Training
 #Best practice to always update
-RUN yum -y update 
+RUN yum -y update
 #Install Apache
-RUN yum -y install httpd 
+RUN yum -y install httpd
 #Install PHP and some addons
 RUN yum -y install php \
-	Php-mysql \
-	Php-pdo \
-	Php-gd \
-	Php-mbstring 
+    php-pdo \
+    php-gd \
+    php-mysqli \
+    php-mbstring
 #Delete what is currently there
 RUN rm -rf /var/www/html/*
 #Copy the contents inside your current directory on your local build into the container
 COPY html/ /var/www/html/
+#This will fix up the Apache configuration to ensure logs to to STDOUT
+COPY httpd.conf /etc/httpd/conf/httpd.conf
 #We will expose two networking ports to the container
-EXPOSE 80 443 
+EXPOSE 80 443
 #When the container starts start up Apache as the process
 CMD ["/usr/sbin/apachectl", "-D", "FOREGROUND"]
 ```
@@ -229,7 +231,7 @@ ping mariadb
 3. You can see that our simple web application is configured to lookup the mariadb hostname.  
 
 ```
-cat /var/www/html/config.php
+cat /var/www/html/config/config.php
 ```
 
 4.  Lets make sure our simple web application works open up a web browser and go to (remember that we mapped localhost port 80 to port 80 inside of the container when we ran the run command):

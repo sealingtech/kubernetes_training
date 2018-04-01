@@ -3,9 +3,11 @@ kind: Deployment
 metadata:
   name: webtraining 
   namespace: default
+  #label this deployment as web training so we can reference it later
   labels:
     app: webtraining 
 spec:
+  #This Deployment will have a replicaset that configures two pods across the cluster
   replicas: 2
   selector:
     matchLabels:
@@ -21,7 +23,9 @@ spec:
         imagePullPolicy: Always
         image: dlohin/stechtraining_web:1 
         ports:
+        #Open up ports 80
         - containerPort: 80
+        #Readiness probe will have the LB check until a successful httpGet to / is made before it begins to send traffic to newly created pods
         readinessProbe:
           httpGet:
             path: /
@@ -29,6 +33,7 @@ spec:
           initialDelaySeconds: 5
           timeoutSeconds: 1
           periodSeconds: 15
+        #Once pods are living the LB will be configured to verify that each container is up by making a get request.  Pods are killed and recreated if it fails
         livenessProbe:
           httpGet:
             path: /
@@ -36,5 +41,14 @@ spec:
           initialDelaySeconds: 5
           timeoutSeconds: 1
           periodSeconds: 15
+        #The pod contains a volume called web-config and will be mounted inside of the container here
+        volumeMounts:
+          - mountPath: /var/www/html/config
+            name: web-config 
+      #Pod has a volume made available to it, in this case it is a configmap that was created earlier
+      volumes:
+      - name: web-config
+        configMap:
+          name: web-config
       restartPolicy: Always
       dnsPolicy: ClusterFirst
