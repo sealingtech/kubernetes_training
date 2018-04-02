@@ -5,7 +5,41 @@ cd ~/kubernetes_training/kubernetes/
 ls -la
 ```
 
-##Deploy Database Pod
+## Deploy Database Service    
+In order for containers to communicate they must talk through a service.  In this design our web pods need to be able to communicate with our database container so they need a service IP.  Each host is running a container called "kube-proxy".  Kube-proxy's role is to listen on the If we contact this service IP address the proxy will forward the request in a load balanced fashion.  It is best practice to deploy services before the pods as the pod can then consume additional environment variables.  Some notes:
+1. The name of the service is important as this is the name that containers will lookup to find the service IP.  Kubernetes runs a DNS server container called kube-dns.  Each service name can been looked up using this with the service name.
+2. We specify a port name (which is mostly for convenience) then the port which the service IP will listen on.  When it receives a request to this port it will send the request to the pods target port which will service it.
+3. The selector is important.  Remember that tag we created earlier?  The service IP will forward to tags with app=dbtraining.
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-service
+  namespace: default
+spec:
+  ports:
+    - name: mariadb
+      #Listen on 3306 and then forward the request to port 3306 in the pod
+      port: 3306
+      targetPort: 3306
+  #Send requests in a load balanced fashion to containers with the selector app=dbtraining
+  selector:
+    app: dbtraining
+```
+
+To create the service apply the db_service.yaml and then run get service to see our service created with its assigned IP address.
+```
+Daniels-MBP:kubernetes dlohin$ kubectl apply -f db_service.yaml
+service "db-service" created
+Daniels-MBP:kubernetes dlohin$ kubectl get service
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+db-service   ClusterIP   10.96.40.232   <none>        3306/TCP   5m
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP    6h
+```
+
+
+## Deploy Database Pod
 
 First we need to create a Deployment.  A deployment will create an additional replicaset which will contain a single pod (replicas are one in this case).  This pod only has a single container which is the database Docker container from Docker hub (it is the same as we created in the Docker training).  There are a few things to point out in this file:
 1. We are creating a label with the key "app" and the value of dbtraining.  We do this so we can refer to this deployment and pods in other yaml files.  For example, the service will point to the pods with this tag.  The tags can be anything, 
@@ -99,40 +133,8 @@ kubectl logs dbtraining-77c7cf7cc6-vf2cx
 kubectl exec -it dbtraining-77c7cf7cc6-vf2cx bash  
 ```
   
-##Deploy Database Service    
-In order for containers to communicate they must talk through a service.  In this design our web pods need to be able to communicate with our database container so they need a service IP.  Each host is running a container called "kube-proxy".  Kube-proxy's role is to listen on the If we contact this service IP address the proxy will forward the request in a load balanced fashion.  Some notes
-1. The name of the service is important as this is the name that containers will lookup to find the service IP.  Kubernetes runs a DNS server container called kube-dns.  Each service name can been looked up using this with the service name.
-2. We specify a port name (which is mostly for convenience) then the port which the service IP will listen on.  When it receives a request to this port it will send the request to the pods target port which will service it.
-3. The selector is important.  Remember that tag we created earlier?  The service IP will forward to tags with app=dbtraining.
 
-```
-apiVersion: v1
-kind: Service
-metadata:
-  name: db-service
-  namespace: default
-spec:
-  ports:
-    - name: mariadb
-      #Listen on 3306 and then forward the request to port 3306 in the pod
-      port: 3306
-      targetPort: 3306
-  #Send requests in a load balanced fashion to containers with the selector app=dbtraining
-  selector:
-    app: dbtraining
-```
-
-To create the service apply the db_service.yaml and then run get service to see our service created with its assigned IP address.
-```
-Daniels-MBP:kubernetes dlohin$ kubectl apply -f db_service.yaml
-service "db-service" created
-Daniels-MBP:kubernetes dlohin$ kubectl get service
-NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-db-service   ClusterIP   10.96.40.232   <none>        3306/TCP   5m
-kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP    6h
-```
-
-##Deploy configuration Map
+## Deploy configuration Map
 If you remember when we created our Docker application the php application had a configuration file in it containing information to connect to the database.  While it is possible to have preset all these values in the Docker container that is not a good idea because our passwords are now in the Docker container that is public on Docker hub which anyone can view.  We also changed the hostname (we used mariadb in Docker, we are now using db-service in our service).  We need to change that inside of the cluster.  To do this, we can create a config map.  When the container is created we will use this to mount a volume which contains these files over what is currently in the container.  This configmap only specifies a single file called config.php.  Here we specify our service name, and password.
 
 ```
@@ -153,8 +155,30 @@ data:
     ?>
 ```
 
+## Deploy Web Service
+Similar to the db service, we need to create a web service.  This will make the service available to the entire cluster, but will not expose this to outside of the cluster.  This will be used by the Ingress.
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  namespace: default
+spec:
+  ports:
+    - name: http
+      #Listen on 3306 and then forward the request to port 3306 in the pod
+      port: 80
+      targetPort: 80
+  #Send requests in a load balanced fashion to containers with the selector app=dbtraining
+  selector:
+    app: webtraining
+```
 
-##Deploy Web Pod
+```
+kubectl apply -f web_service.yaml
+```
+
+## Deploy Web Pod
 Now we will deploy the web pods.  This is similiar to the database pods we created earlier with a few changes.  
 
 1. Our replicaset will have two pods deployed instead of one this time.  Requests to the service IP will then be load balanced to one of these two.
@@ -232,30 +256,8 @@ dbtraining    1         1         1            1           44m
 webtraining   2         2         2            2           6m
 ```
 
-##Deploy web Service
-Similar to the db service, we need to create a web service.  This will make the service available to the entire cluster, but will not expose this to outside of the cluster.  This will be used by the Ingress.
-```
-apiVersion: v1
-kind: Service
-metadata:
-  name: web-service
-  namespace: default
-spec:
-  ports:
-    - name: http
-      #Listen on 3306 and then forward the request to port 3306 in the pod
-      port: 80
-      targetPort: 80
-  #Send requests in a load balanced fashion to containers with the selector app=dbtraining
-  selector:
-    app: webtraining
-```
 
-```
-kubectl apply -f web_service.yaml
-```
-
-##Configure Ingress
+## Configure Ingress
 To expose our web service outside of the cluster an Ingress will be created.  The exact details of how this works varies depending on which ingress is used........
 
 ```
@@ -289,7 +291,7 @@ Are you now sitting here thinking that was way to many commands to run???  All t
 
 
 
-##Scaling containers
+## Scaling containers
 If we find we need more web containers, simply scale the deployment which will create more pods then view the pods and you should have four now.
 ```
 kubectl scale deployment webtraining --replicas=4
@@ -302,7 +304,7 @@ kubectl scale deployment webtraining --replicas=2
 ```
 
 
-##Rolling Updates
+## Rolling Updates
 This is coolest feature of Kubernetes, period. I saw this in a presentation and it the primary reason I wanted to learn Kubernetes. 
 
 First we want to prove that this works.  Open up a new terminal and run this loop command and leave it running so you can see it.  What you should see is a message showing that we are running version 1 of the container as well as the container name.  Because we have two containers and the load balancer is alternating between the two you should see it bouncing back and forth between them.
@@ -371,3 +373,118 @@ dbtraining-77c7cf7cc6    1         1         1         31m
 webtraining-6677c8b95f   0         0         0         20m
 webtraining-8688bf8894   2         2         2         31m
 ```
+
+
+## Understanding Kubernetes Networking
+When we built the cluster we chose to use Calico as our Container Networking Interface.  By default, Kubernetes doesn't have any networking provider and relies on you to choose one.  The details of the underlying network will change depending on which CNI is selected but most of the general concepts will be the same.  I am going to discuss Kubernetes with Calico in this case.  Depending on the CNI you choose will change how traffic is handled within your cluster.
+
+
+For a more in depth discussion of Kubernetes networking this is a good source: https://kubernetes.io/docs/concepts/cluster-administration/networking/
+
+Calico resources:
+http://leebriggs.co.uk/blog/2017/02/18/kubernetes-networking-calico.html
+https://www.projectcalico.org/learn/
+https://www.youtube.com/watch?v=dFsrx5AxgyI
+
+
+Lets look at networking and how it works at a high level with Calico:
+To get the IPs of all containers in our cluster
+
+```
+[root@kube-1 kubernetes]# kubectl get pods -o wide
+NAME                           READY     STATUS    RESTARTS   AGE       IP                NODE
+dbtraining-78b95d8467-vrj5s    1/1       Running   0          6m        192.168.24.1      kube-2.lohin.lan
+webtraining-558f4dbbdc-7d8f2   1/1       Running   0          4m        192.168.24.3      kube-2.lohin.lan
+webtraining-558f4dbbdc-7hm76   1/1       Running   0          4m        192.168.86.5      kube-3.lohin.lan
+webtraining-558f4dbbdc-hs5gr   1/1       Running   0          6m        192.168.24.2      kube-2.lohin.lan
+webtraining-558f4dbbdc-jqwrs   1/1       Running   0          4m        192.168.24.4      kube-2.lohin.lan
+webtraining-558f4dbbdc-lvhnh   1/1       Running   0          4m        192.168.251.131   kube-1.lohin.lan
+```
+
+We notice that when we set up Kubernetes we ran the command:
+```
+kubeadm init --pod-network-cidr=192.168.0.0/16
+```
+
+So this meant we allocated an entire /16 to Kubernetes but all our IPS are in a single /26.  With one node you can't see it, but if we had multiple nodes then each node with containers allocated would have their own /26 allocated.  The network range you select doesn't matter too much as long as your cluster never need to reach out to an IP in this same range.  This IP scheme is only used for internal cluster communication and isn't meant to be made routable.
+
+To add to the confusion, service IPs are something else entirely!
+```
+[root@kube-1 kubernetes]# kubectl get pods -o wide
+NAME                           READY     STATUS    RESTARTS   AGE       IP                NODE
+dbtraining-78b95d8467-vrj5s    1/1       Running   0          6m        192.168.24.1      kube-2.lohin.lan
+webtraining-558f4dbbdc-7d8f2   1/1       Running   0          4m        192.168.24.3      kube-2.lohin.lan
+webtraining-558f4dbbdc-7hm76   1/1       Running   0          4m        192.168.86.5      kube-3.lohin.lan
+webtraining-558f4dbbdc-hs5gr   1/1       Running   0          6m        192.168.24.2      kube-2.lohin.lan
+webtraining-558f4dbbdc-jqwrs   1/1       Running   0          4m        192.168.24.4      kube-2.lohin.lan
+webtraining-558f4dbbdc-lvhnh   1/1       Running   0          4m        192.168.251.131   kube-1.lohin.lan
+.... Move pods below...
+
+```
+
+Lets look at networking inside of a pod:
+Access a shell using exec of one of the web pods.
+```
+kubectl exec -it <pod name> bash
+```
+
+Install net-tools inside of the container:
+```
+yum -y install net-tools iproute
+```
+
+NOTE: It is bad practice to install packages directly into a container like this because changes will be lost next deployment (which happens frequently).  If you need tools long term inside of a container the proper way is to rebuild the container and start the process over.  It also makes the containers different across the cluster.  We will let it slide... this time....
+
+
+
+```
+[root@webtraining-558f4dbbdc-jqwrs /]# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: tunl0@NONE: <NOARP> mtu 1480 qdisc noop state DOWN qlen 1
+    link/ipip 0.0.0.0 brd 0.0.0.0
+4: eth0@if8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
+    link/ether ea:b6:ad:8b:c2:4f brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 192.168.24.4/32 scope global eth0
+       valid_lft forever preferred_lft forever
+```
+
+Look at one of the hosts, this is KUBE-1 we see that there is an entry for routing to two other nodes.  Calico adds routes for each subnet on each host that now goes through the Calico tunnel adapter to send information through the gateway.  In addition, there are routes for each pod on that specific host which is meant for incoming traffic into the node.
+```
+[root@kube-1 kubernetes]# ip route
+default via 172.31.30.1 dev eth0 proto static metric 100
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1
+172.31.30.0/24 dev eth0 proto kernel scope link src 172.31.30.2 metric 100
+ via 172.31.30.3 dev tunl0 proto bird onlink
+192.168.86.0/26 via 172.31.30.4 dev tunl0 proto bird onlink
+blackhole 192.168.251.128/26 proto bird
+192.168.251.129 dev cali3ba6b647804 scope link
+192.168.251.130 dev cali20270cc2505 scope link
+192.168.251.131 dev caliec7304bc22d scope link
+```
+
+
+
+
+### Service IPs
+Ok but what about service IPs?  Notice how this is on an entirely different 10. network and that is how services should be addressed anyway? Where does that live?  It lives on a network that is internal to every host.  Each host has a 10. network on it that responds locally.  What internally happens when a request is made to a service IP the kernel grabs the request and forwards it to a container called Kube-proxy local to the host.  This then makes the decision which pod to send to and then places that packet on the calico network where it will then be forwarded to the proper host and then container.
+
+```
+[root@kube-1 kubernetes]# kubectl get services
+NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+db-service    ClusterIP   10.98.112.144   <none>        3306/TCP   51m
+kubernetes    ClusterIP   10.96.0.1       <none>        443/TCP    56m
+web-service   ClusterIP   10.106.138.21   <none>        80/TCP     51m
+```
+
+
+The answer to this puzzle is IPTables.  IPTables intercepts calls to these service IPs and then forwards this off to Kube-proxy.
+```
+[root@kube-1 kubernetes]# iptables-save | grep 10.106.138.21
+-A KUBE-SERVICES ! -s 192.168.0.0/16 -d 10.106.138.21/32 -p tcp -m comment --comment "default/web-service:http cluster IP" -m tcp --dport 80 -j KUBE-MARK-MASQ
+-A KUBE-SERVICES -d 10.106.138.21/32 -p tcp -m comment --comment "default/web-service:http cluster IP" -m tcp --dport 80 -j KUBE-SVC-LHVVVX6K6XR7TB6A
+```
+
+Magic? perhap?
