@@ -4,7 +4,7 @@ This training material was developed internal to Sealingtech for approximately a
 
 Our material is organized as:
 
-Docs - Interactive labs which step students through building containers
-Docker - All Docker files that required for Student's to build
-Kubernetes - All the Kubernetes YAML files to deploy containers
-Presentation - Supporting explanation material
+* Docs - Interactive labs which step students through building containers
+* Docker - All Docker files that required for Student's to build
+* Kubernetes - All the Kubernetes YAML files to deploy containers
+* Presentation - Supporting explanation material
