@@ -7,9 +7,9 @@ metadata:
   labels:
     app: dbtraining
 spec:
-  #Create two pods inside of the cluster, and ensure two are always running
+  #Create a replicaset inside the cluster of the cluster, and ensure two are always running
   replicas: 1 
-  #This spec applies to Deployments with the label app=db
+  #This spec applies to Deployments with the label app=dbtraining
   selector:
     matchLabels:
       app: dbtraining
@@ -18,7 +18,7 @@ spec:
       name: dbtraining
       labels:
         app: dbtraining
-    #This spect has these containers
+    #This replicaset has these containers
     spec:
       containers:
       - name: dbtraining 
