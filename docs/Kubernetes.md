@@ -5,7 +5,7 @@ cd ~/kubernetes_training/kubernetes/
 ls -la
 ```
 
-##Deploy Database Pod
+## Deploy Database Pod
 
 First we need to create a Deployment.  A deployment will create an additional replicaset which will contain a single pod (replicas are one in this case).  This pod only has a single container which is the database Docker container from Docker hub (it is the same as we created in the Docker training).  There are a few things to point out in this file:
 1. We are creating a label with the key "app" and the value of dbtraining.  We do this so we can refer to this deployment and pods in other yaml files.  For example, the service will point to the pods with this tag.  The tags can be anything, 
@@ -99,7 +99,7 @@ kubectl logs dbtraining-77c7cf7cc6-vf2cx
 kubectl exec -it dbtraining-77c7cf7cc6-vf2cx bash  
 ```
   
-##Deploy Database Service    
+## Deploy Database Service    
 In order for containers to communicate they must talk through a service.  In this design our web pods need to be able to communicate with our database container so they need a service IP.  Each host is running a container called "kube-proxy".  Kube-proxy's role is to listen on the If we contact this service IP address the proxy will forward the request in a load balanced fashion.  Some notes
 1. The name of the service is important as this is the name that containers will lookup to find the service IP.  Kubernetes runs a DNS server container called kube-dns.  Each service name can been looked up using this with the service name.
 2. We specify a port name (which is mostly for convenience) then the port which the service IP will listen on.  When it receives a request to this port it will send the request to the pods target port which will service it.
@@ -154,7 +154,7 @@ data:
 ```
 
 
-##Deploy Web Pod
+## Deploy Web Pod
 Now we will deploy the web pods.  This is similiar to the database pods we created earlier with a few changes.  
 
 1. Our replicaset will have two pods deployed instead of one this time.  Requests to the service IP will then be load balanced to one of these two.
@@ -232,7 +232,7 @@ dbtraining    1         1         1            1           44m
 webtraining   2         2         2            2           6m
 ```
 
-##Deploy web Service
+## Deploy web Service
 Similar to the db service, we need to create a web service.  This will make the service available to the entire cluster, but will not expose this to outside of the cluster.  This will be used by the Ingress.
 ```
 apiVersion: v1
@@ -255,7 +255,7 @@ spec:
 kubectl apply -f web_service.yaml
 ```
 
-##Configure Ingress
+## Configure Ingress
 To expose our web service outside of the cluster an Ingress will be created.  The exact details of how this works varies depending on which ingress is used........
 
 ```
@@ -289,7 +289,7 @@ Are you now sitting here thinking that was way to many commands to run???  All t
 
 
 
-##Scaling containers
+## Scaling containers
 If we find we need more web containers, simply scale the deployment which will create more pods then view the pods and you should have four now.
 ```
 kubectl scale deployment webtraining --replicas=4
@@ -302,7 +302,7 @@ kubectl scale deployment webtraining --replicas=2
 ```
 
 
-##Rolling Updates
+## Rolling Updates
 This is coolest feature of Kubernetes, period. I saw this in a presentation and it the primary reason I wanted to learn Kubernetes. 
 
 First we want to prove that this works.  Open up a new terminal and run this loop command and leave it running so you can see it.  What you should see is a message showing that we are running version 1 of the container as well as the container name.  Because we have two containers and the load balancer is alternating between the two you should see it bouncing back and forth between them.
