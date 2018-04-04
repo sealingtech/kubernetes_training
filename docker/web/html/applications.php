@@ -22,6 +22,14 @@ if(isset($_POST['submit'])) {
       echo "Thanks for your application!";
     }
 
+    $db = new mysqli($hostname,$username,$password,$db);
+    // Grabs data and orders by name 
+    foreach ( $db->query('SELECT * FROM user_application') as $row ) {
+        print_r($row);//echo "{$row['field']}";
+	echo "<br/>";
+    }
+
+
 }
 ?>
 
