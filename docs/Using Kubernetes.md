@@ -1,7 +1,7 @@
-#Using Kubernetes
+# Using Kubernetes
 In this lab, we will be deploying the containers we made in the Docker lab to Kubernetes.  We will be using images posted in Docker hub specifically for this class made using the same process.  For both Apache and Mariadb a service and pod will be created.  For Apache an Ingress will be created in order to access the services from outside of the network.  Finally we will demonstrate rolling updates and how you can use Kubernetes to manage multiple versions of the software.
 
-##To start this lab
+## To start this lab
 
 Start Kubernetes in the directory.  Kubernetes files are written in YAML files.  To save time, all the files have been created for you, but we will go through each one by one and explain the purpose.  In the YAMLs are comments which should also be looked at.  Due to the amount of time given to the class, this is definitely a fire hose.  More time will be required to research the inividual options in each YAML.
 
