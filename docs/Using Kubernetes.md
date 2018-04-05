@@ -222,7 +222,7 @@ Run the command:
 kubectl apply -f web_configmap.yaml
 ```
 
-## Deploy web Service
+## Deploy Web Service
 Similar to the db service, we need to create a web service.  This will make the service available to the entire cluster, but will not expose this to outside of the cluster.  This will be used by the Ingress.
 
 File: 
@@ -259,6 +259,7 @@ Now we will deploy the web pods.  This is similar to the database pods we create
 2. Our image again is version 1, in this class we will update to version 2 in a later step.
 3. We have a liveness probe and readiness probe. These are critical for properly handling failure of pods, updating of pods and more.  The readiness probe will be how Kubernetes know when the the pod is ready to service requests.  Kubernetes will not forward traffic to this pod until the readiness check comes back correctly.  The Liveness probe is run after the readiness probe comes back.  When Kubernetes senses a failure it will stop sending traffic to the pod, then delete the pod and recreate a new one in hopes that this will solve any issues.
 4. There is a volume and volume mount indicated which is our configmap.  The volume is made available to the pod and then this volume gets mounted to a directory inside of out container using the volume mount.
+
 File:
 
 ```
