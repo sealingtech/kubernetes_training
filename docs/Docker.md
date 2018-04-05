@@ -1,25 +1,14 @@
-# Building Your Work Environment 
-## Install Docker
-Note: The commands in the guide will be Debian based (Ubuntu).  However, Docker is not limited to just this distribution and can be downloaded on most other distributions, as well as MAC OS, and Windows 10 platform. 
+# Using Docker to build container
+In this lab we will build two containers.  The first container will be built off of Centos base which we will then install and configure an Apache server.  This shows the process of building your own image.  The second is a Mariadb image based on an image from Docker Hub.  This image is maintained as an official image and is purpose driven specifically for Mariadb.
 
-1. First we will update our package list and install docker community edition.
-```
-sudo apt-get update
-sudo apt-get install docker-ce 
-```
+## Running our first docker container!
 
-2. Start the Docker service
-```
-Sudo service docker start 
-```
-
-3. Start the first container.  There is a simple hello world container on Docker hub that we can start and test.
-
+Run the command:
 ```
 docker run hello-world
 ```
 
-Output should be:
+Output will be something like this:
 
 ```
 Unable to find image 'hello-world:latest' locally
@@ -53,9 +42,11 @@ For more examples and ideas, visit:
  
 ## Creating our first Docker container
 
-We have used a default container from Docker hub, but lets make our own container.  We will use Centos for our package source and start from there.  We will then install a number of packages inside of it and then expose port 80 and 443.  Finally we will specify the executable to start when the container comes up.  
+We have used a default container from Docker hub, but lets make our own container.  We will use Centos for our package source and start from there.  We will then install a number of packages inside of it and then expose port 80.  Finally we will specify the executable to start when the container comes up.  
 
 1. Clone out the containers of the the class files from github and we will start in the web area.
+
+Run the command:
 
 ```
 git clone https://github.com/sealingtech/kubernetes_training
@@ -63,7 +54,9 @@ cd kubernetes_training/docker/web/
 ```
 
 
-2. There is a file called Dockerfile with the following contents (note capital "D" is important).  Look at the contents to get an understanding of the contents.  Run the command:
+2. There is a file called Dockerfile with the following contents (note capital "D" is important).  Look at the contents to get an understanding of the contents.  Comments were added inline using the # symbol.  Run the command:
+
+Run the command:
 
 ```
 cat Dockerfile
@@ -90,40 +83,46 @@ RUN yum -y install php \
 RUN rm -rf /var/www/html/*
 #Copy the contents inside your current directory on your local build into the container
 COPY html/ /var/www/html/
-#This will fix up the Apache configuration to ensure logs to to STDOUT
+#This will fix up the Apache configuration to ensure logs to to STDOUT.  This is a Docker best practice so that logs can be saved after the death of containers.
 COPY httpd.conf /etc/httpd/conf/httpd.conf
-#We will expose two networking ports to the container
-EXPOSE 80 443
+#We will expose two networking ports to the container.  This is mostly to tell users to open these when running the container.
+EXPOSE 80
 #When the container starts start up Apache as the process
 CMD ["/usr/sbin/apachectl", "-D", "FOREGROUND"]
 ```
 
 2. Build the container.  This will first download the Centos image (if it hasn't been downloaded already) and then begin executing then begin executing the commands in your Dockerfile.  When this is done it will save off an image into your local Docker repository called stech/apache.  We will then view our image repository.
 
+Run the command:
+
 ```
-sudo docker build -t stech/apache . 
-sudo docker image ls
+docker build -t stech/apache . 
+docker image ls
 ```
 
-3. Start up the container.  The arguments are as follows
+3. Start up the container.  The arguments are as follows:
   + -t Give the container a tty (a terminal) so you can execute a shell
   + -d Detached, run in the background
   + --name give the container the name apache
   + -p Map port 80 on the local host port to the container port 80.  Your local host will listen on port 80 and forward all requests to your Docker container also listening on port 80.  When we move the Docker container to Kubernetes we will use  more robust networking options, but this works for testing.
 
+Run the command:
+
 ```
-#Create a user defined bridged network
+#Create a user defined bridged network.  This will create a Linux bridge and configure a small DNS server
 docker network create stech
-#Create our container
+#Create our container from the image we created earlier
 sudo docker run -td --name apache --net stech -p 80:80 stech/apache 
 # show your container running
-sudo docker ps
+docker ps
 ```
 
 4. The containers is now running in the background, you can access the container's terminal
 
+Run the command:
+
 ```
-sudo docker exec -it apache bash  
+docker exec -it apache bash  
 ```
 
 5. To escape from the terminal you press ctrl+a, then while still holding ctrl, hit d
@@ -135,14 +134,21 @@ For the database, we will simply pull from Docker hub already made images instea
 https://hub.docker.com/_/mariadb/
 
 1.  cd over to our db folder in the files we downloaded
+
+Run the command:
+
 ```
 cd ../db
 ```
 
 2. View the contents of our Dockerfile
+
+Run the command:
+
 ```
 cat Dockerfile
 ```
+
 Output:
 
 ```
@@ -159,25 +165,38 @@ COPY createtable.sql /docker-entrypoint-initdb.d/
 ```
 
 3. Build the container:
+
+Run the command:
+
 ```
 docker build -t stech/mariadb .
 ```
 
 4. Run the following commands to create a container called mariadb using the mariadb image from Docker Hub.
+
+Run the command:
+
 ```
 docker run -itd --name mariadb --net stech stech/mariadb
 ```
 
 5. Lets get a shell to see how the container was configured
+
+Run the command:
+
 ```
 docker exec -it mariadb bash
 ```
 
 6. Inside the container we can see how environment variables were set from the options we set on the command line:
+
+Run the command:
+
 ```
 env
 ```
-Will give us the output:
+
+Output:
 
 ```
 MARIADB_MAJOR=10.2
@@ -198,10 +217,13 @@ _=/usr/bin/env
 ```
 
 7. View processes, notice that the container has very little going on, when we aren't accessing the shell only Mysqld would be running:
+
+Run the command:
 ```
 ps -ef
 ```
-output:
+
+Output:
 
 ```
 UID        PID  PPID  C STIME TTY          TIME CMD
@@ -217,11 +239,14 @@ We haven't really looked at networking up until this point.  We have been connec
 
 1. To view docker networking information
 
+Run the command:
 ```
 docker network inspect stech
 ```
 
 2. Lets pull up the apache containers terminal and run ping to mariadb to make sure it is working (ctrl-c when done)
+
+Run the command:
 
 ```
 docker exec -it apache bash
@@ -230,11 +255,27 @@ ping mariadb
 
 3. You can see that our simple web application is configured to lookup the mariadb hostname.  
 
+Run the command:
+
 ```
 cat /var/www/html/config/config.php
 ```
 
 4.  Lets make sure our simple web application works open up a web browser and go to (remember that we mapped localhost port 80 to port 80 inside of the container when we ran the run command):
+
 http://127.0.0.1/applications.html
 
 5. Enter in information in the web app and then select "submit".    You should get the message "Thanks for your application!" which verifies we have written data to the database.
+
+
+You have now built two containers that are connected to the network.  
+
+
+To clean up, lets stop our containers as to not interfere later when you configure Kubernetes.
+
+Run the command:
+
+```
+docker stop mariadb
+docker stop apache
+```
