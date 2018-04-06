@@ -9,7 +9,7 @@ metadata:
 spec:
   rules:
   #This reverse web proxy will look for requests looking for a specific host name so that you can host multiple sites on the same cluster all on port 80.  Therefore it is necessary to have a proper DNS record pointed to your system.  For the class this has been done for you.
-  - host: test.lohin.lan
+  - host: <Enter in Fully Qualified Domain here i.e. student#.kubernetes.lab>
     http:
       paths:
       #Specify this service to forward traffic to

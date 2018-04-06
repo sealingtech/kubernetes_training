@@ -133,7 +133,7 @@ NAME         DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 dbtraining   1         1         1            1           7m
 ```
 
-We can see the replicaset with the command kubectl get replicaset.  Here we see the desired number of pods that are desired, current, ready.
+We can see the replicaset with the command kubectl get replicaset.  Here we see the desired number of pods that are desired, current, ready.  One of the fundamental concepts of Kubernetes is you never tell Kubernetes how to get to where it needs to go, you specify a desired value and Kubernetes figures out how to get there.  These values tell you what you specified and how well Kubernetes is doing reaching that desired value.
 
 Run the command:
 
@@ -169,7 +169,7 @@ dbtraining-77c7cf7cc6-vf2cx   1/1       Running   0          10m
  Run the command:
  
 ```
-kubectl describe pod dbtraining-77c7cf7cc6-vf2cx
+kubectl describe pod <name of pod>
 ```
 
 Here you can see all the specific information about the specific pod as well events.
@@ -179,7 +179,7 @@ Docker convention is to output logs to STDOUT in Linux.  When this is done it is
 Run the command:
 
 ```
-kubectl logs dbtraining-77c7cf7cc6-vf2cx
+kubectl logs <name of pod>
 ```
   
   Similiar to Docker, you can pull a shell on the container to exit, use ctrl + a then d.
@@ -187,7 +187,7 @@ kubectl logs dbtraining-77c7cf7cc6-vf2cx
 Run the command:
 
 ```
-kubectl exec -it dbtraining-77c7cf7cc6-vf2cx bash  
+kubectl exec -it <name of pod> bash  
 ```
   
 
@@ -322,7 +322,7 @@ spec:
 Run the command:
 
 ```
-kubectl apply -f web_configmap.yaml
+kubectl apply -f web_pod.yaml
 ```
 
 
@@ -345,7 +345,7 @@ webtraining   2         2         2            2           6m
 ## Configure Ingress
 To expose our web service outside of the cluster an Ingress will be created.  It will be necessary to change the host: option to the dns name you have been provided.
 
-File:
+File NOTE: you need to modify the host value here!!!!!  It needs to be student#.kubernetes.lab.  :
 ```
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -358,7 +358,7 @@ metadata:
 spec:
   rules:
   #This reverse web proxy will look for requests looking for a specific host name so that you can host multiple sites on the same cluster all on port 80.  Therefore it is necessary to have a proper DNS record pointed to your system.  For the class this has been done for you.
-  - host: test.lohin.lan
+  - host: <Enter in Fully Qualified Domain here i.e. student#.kubernetes.lab>
     http:
       paths:
       #Specify this service to forward traffic to
@@ -373,7 +373,7 @@ kubectl apply -f ingress.yaml
 ```
 
 
-Are you now sitting here thinking that was way to many commands to run???  All those kubectl applys, I thought this was supposed to be one touch and highly repeatable?  We could have actually consolidated this all into one file and then seperated them with three dashes (---) or you could have run the command kubectl apply -f . and it would have applied all the yamls in the correct order, but what is the fun in that?  Really the purpose was to show how these fit together so we did it one at a time the hard way like we used to do it in the old days!  Now get off my lawn!
+Are you now sitting here thinking that was way to many commands to run???  All those kubectl applys, I thought this was supposed to be one touch and highly repeatable?  We could have actually consolidated this all into one file and then separated them with three dashes (---) or you could have run the command kubectl apply -f . and it would have applied all the yamls in the correct order in that directory, but what is the fun in that?  Really the purpose was to show how these fit together so we did it one at a time the hard way like we used to do it in the old days!  Now get off my lawn!
 
 
 Open up the web browser and go to the dns name provided to you in the class.
@@ -407,7 +407,7 @@ First we want to prove that this works.  Open up a new terminal and run this loo
 
 Run the command:
 ```
-while true; do curl http://test.lohin.lan/version.php;echo "";sleep 1;done;
+while true; do curl http://<student#>.kubernetes.lab/version.php;echo "";sleep 1;done;
 ```
 
 Output will look something like this:
@@ -440,6 +440,8 @@ deployment "webtraining" successfully rolled out
 
 If you look at your looping curl statement you will see the version number update and the container names should switch over to something else.
 
+Output:
+
 ```
 This is version 1 webtraining-8688bf8894-7bxv4
 This is version 1 webtraining-8688bf8894-7bxv4
@@ -451,8 +453,16 @@ This is version 2 webtraining-6677c8b95f-spcpl
 ```
 
 You can view the rollout history to see how we updated this
+
+Run the command:
+
 ```
-Daniels-MBP:~ dlohin$ kubectl rollout history deployment webtraining
+kubectl rollout history deployment webtraining
+```
+
+Output:
+
+```
 deployments "webtraining"
 REVISION  CHANGE-CAUSE
 1         <none>

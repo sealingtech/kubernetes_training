@@ -115,6 +115,9 @@ docker network create stech
 sudo docker run -td --name apache --net stech -p 80:80 stech/apache 
 # show your container running
 docker ps
+#open firewall up to port 80 so you can reach it from outside
+iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 ```
 
 4. The containers is now running in the background, you can access the container's terminal
@@ -127,7 +130,7 @@ docker exec -it apache bash
 
 5. To escape from the terminal you press ctrl+a, then while still holding ctrl, hit d
 
-6. Open your web browser and browse to http://127.0.0.1/ and you should see apache serving from your container.
+6. Open your web browser and browse to http://student<#>.kubernetes.lab/ and you should see apache serving from your container.
 
 ## Building MariaDB container.
 For the database, we will simply pull from Docker hub already made images instead of building our own container.  The benefit to doing this is they are maintained inside and Docker hub and they generally have options made available to set.  The options are set as environment variables and then scripts are used to configure the container accordingly.  You can see the options available here:
@@ -138,7 +141,7 @@ https://hub.docker.com/_/mariadb/
 Run the command:
 
 ```
-cd ../db
+cd ~/kubernetes_training/docker/db/
 ```
 
 2. View the contents of our Dockerfile
@@ -172,7 +175,7 @@ Run the command:
 docker build -t stech/mariadb .
 ```
 
-4. Run the following commands to create a container called mariadb using the mariadb image from Docker Hub.
+4. Run the following commands to create a container called mariadb using the mariadb image from Docker Hub.  We don't have to expose these ports because it will just be made available locally to the apache container we built earlier.
 
 Run the command:
 
@@ -188,7 +191,7 @@ Run the command:
 docker exec -it mariadb bash
 ```
 
-6. Inside the container we can see how environment variables were set from the options we set on the command line:
+6. Inside the container we can see how environment variables were set from the options we set on the command line.  These environment variables are simply being called in scripts for initiating the container and configuring it:
 
 Run the command:
 
@@ -216,6 +219,12 @@ MYSQL_ROOT_PASSWORD=password12345
 _=/usr/bin/env
 ```
 
+If you want to view the scripts that are used to start the container, you can view this from /docker-entrypoint.sh. /docker-entrypoint.sh is the recommended entrypoint path to use.
+
+```
+cat /docker-entrypoint.sh
+```
+
 7. View processes, notice that the container has very little going on, when we aren't accessing the shell only Mysqld would be running:
 
 Run the command:
@@ -234,7 +243,7 @@ root       182   177  0 17:16 pts/1    00:00:00 ps -ef
 
 8. To escape from the terminal you press ctrl+a, then while still holding ctrl, hit d
 
-## Connecting the two containers
+## Understanding the networking
 We haven't really looked at networking up until this point.  We have been connecting the docker containers to a bridge we created called stech.  All containers on this network can communicate to one another as if they were all connected to a switch.  Notice that we haven't set IPs, netmasks or any of the details up until this point. The way we can lookup container IPs is through a DNS server that Docker runs.  We are able to lookup the names of containers through DNS to get there IPs.  The networking will change when we send these containers to the cloud using Kubernetes, but this works well for testing.
 
 1. To view docker networking information
@@ -263,12 +272,12 @@ cat /var/www/html/config/config.php
 
 4.  Lets make sure our simple web application works open up a web browser and go to (remember that we mapped localhost port 80 to port 80 inside of the container when we ran the run command):
 
-http://127.0.0.1/applications.html
+http://student<#>.kubernetes.lab/applications.html
 
 5. Enter in information in the web app and then select "submit".    You should get the message "Thanks for your application!" which verifies we have written data to the database.
 
 
-You have now built two containers that are connected to the network.  
+You have now built two containers that are connected to the network.  Please exit the containers by pressing ctrl a+d.
 
 
 To clean up, lets stop our containers as to not interfere later when you configure Kubernetes.
