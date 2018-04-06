@@ -2,7 +2,6 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: webtraining 
-  namespace: default
   #label this deployment as web training so we can reference it later
   labels:
     app: webtraining 

@@ -2,7 +2,6 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: web-service-ingress 
-  namespace: default 
   annotations:
     #Use Traefik as the ingress load balancer
     kubernetes.io/ingress.class: traefik

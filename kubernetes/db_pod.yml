@@ -2,7 +2,6 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: dbtraining 
-  namespace: default
   #Labels are used as "tags" that can be referenced in other object (like services).  Labels can be anything, environment, beta or whatever you want.
   labels:
     app: dbtraining
