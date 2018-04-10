@@ -111,10 +111,13 @@ Run the command:
 ```
 #Create a user defined bridged network.  This will create a Linux bridge and configure a small DNS server
 docker network create stech
+
 #Create our container from the image we created earlier
-sudo docker run -td --name apache --net stech -p 80:80 stech/apache 
+docker run -td --name apache --net stech -p 80:80 stech/apache 
+
 # show your container running
 docker ps
+
 #open firewall up to port 80 so you can reach it from outside
 iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 iptables -A OUTPUT -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
