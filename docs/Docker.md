@@ -42,9 +42,9 @@ For more examples and ideas, visit:
  
 ## Creating our first Docker container
 
-We have used a default container from Docker hub, but lets make our own container.  We will use Centos for our package source and start from there.  We will then install a number of packages inside of it and then expose port 80.  Finally we will specify the executable to start when the container comes up.  
+We have used a default container from Docker hub, but lets make our own container.  We will use Centos for our package source and start from there.  We will then install a number of packages inside of it and then expose port 80.  Finally, we will specify the executable to start when the container comes up.  
 
-1. Clone out the containers of the the class files from github and we will start in the web area.
+1. Clone out the containers of the class files from github and we will start in the web area.
 
 Run the command:
 
@@ -54,7 +54,7 @@ cd kubernetes_training/docker/web/
 ```
 
 
-2. There is a file called Dockerfile with the following contents (note capital "D" is important).  Look at the contents to get an understanding of the contents.  Comments were added inline using the # symbol.  Run the command:
+2. There is a file called Dockerfile with the following contents (note capital "D" is important).  Look at the contents to get an understanding.  Comments were added inline using the # symbol.
 
 Run the command:
 
@@ -91,7 +91,7 @@ EXPOSE 80
 CMD ["/usr/sbin/apachectl", "-D", "FOREGROUND"]
 ```
 
-2. Build the container.  This will first download the Centos image (if it hasn't been downloaded already) and then begin executing then begin executing the commands in your Dockerfile.  When this is done it will save off an image into your local Docker repository called stech/apache.  We will then view our image repository.
+2. Build the container.  This will first download the Centos image (if it hasn't been downloaded already) and then begin executing the commands in your Dockerfile.  When this is done it will save an image into your local Docker repository called stech/apache.  We will then view our image repository.
 
 Run the command:
 
@@ -104,7 +104,7 @@ docker image ls
   + -t Give the container a tty (a terminal) so you can execute a shell
   + -d Detached, run in the background
   + --name give the container the name apache
-  + -p Map port 80 on the local host port to the container port 80.  Your local host will listen on port 80 and forward all requests to your Docker container also listening on port 80.  When we move the Docker container to Kubernetes we will use  more robust networking options, but this works for testing.
+  + -p Map port 80 on the local host port to the container port 80.  Your local host will listen on port 80 and forward all requests to your Docker container also listening on port 80.  When we move the Docker container to Kubernetes we will use more robust networking options, but this works for testing.
 
 Run the command:
 
@@ -120,7 +120,7 @@ iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j AC
 iptables -A OUTPUT -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 ```
 
-4. The containers is now running in the background, you can access the container's terminal
+4. The containers are now running in the background, you can access the container's terminal
 
 Run the command:
 
@@ -133,7 +133,7 @@ docker exec -it apache bash
 6. Open your web browser and browse to http://student<#>.kubernetes.lab/ and you should see apache serving from your container.
 
 ## Building MariaDB container.
-For the database, we will simply pull from Docker hub already made images instead of building our own container.  The benefit to doing this is they are maintained inside and Docker hub and they generally have options made available to set.  The options are set as environment variables and then scripts are used to configure the container accordingly.  You can see the options available here:
+For the database, we will simply pull from Docker hub already made images instead of building our own container.  The benefit to doing this is they are maintained inside and the Docker hub generally has options made available to set.  The options are set as environment variables and then scripts are used to configure the container accordingly.  You can see the options available here:
 https://hub.docker.com/_/mariadb/
 
 1.  cd over to our db folder in the files we downloaded
@@ -163,7 +163,7 @@ ENV MYSQL_DATABASE applications
 ENV MYSQL_USER docker_man
 ENV MYSQL_PASSWORD docker12345
 
-#Copy SQL commands to create the tables needed for out web app
+#Copy SQL commands to create the tables needed for our web app
 COPY createtable.sql /docker-entrypoint-initdb.d/
 ```
 
@@ -183,7 +183,7 @@ Run the command:
 docker run -itd --name mariadb --net stech stech/mariadb
 ```
 
-5. Lets get a shell to see how the container was configured
+5. Let's get a shell to see how the container was configured.
 
 Run the command:
 
@@ -244,7 +244,7 @@ root       182   177  0 17:16 pts/1    00:00:00 ps -ef
 8. To escape from the terminal you press ctrl+a, then while still holding ctrl, hit d
 
 ## Understanding the networking
-We haven't really looked at networking up until this point.  We have been connecting the docker containers to a bridge we created called stech.  All containers on this network can communicate to one another as if they were all connected to a switch.  Notice that we haven't set IPs, netmasks or any of the details up until this point. The way we can lookup container IPs is through a DNS server that Docker runs.  We are able to lookup the names of containers through DNS to get there IPs.  The networking will change when we send these containers to the cloud using Kubernetes, but this works well for testing.
+We haven't really looked at networking up until this point.  We have been connecting the docker containers to a bridge we created called stech.  All containers on this network can communicate to one another as if they were all connected to a switch.  Notice that we haven't set IPs, netmasks, or any of the details up until this point. The way we can lookup container IPs is through a DNS server that Docker runs.  We are able to lookup the names of containers through DNS to get their IPs.  The networking will change when we send these containers to the cloud using Kubernetes, but this works well for testing.
 
 1. To view docker networking information
 
@@ -253,7 +253,7 @@ Run the command:
 docker network inspect stech
 ```
 
-2. Lets pull up the apache containers terminal and run ping to mariadb to make sure it is working (ctrl-c when done)
+2. Let's pull up the apache containers terminal and run ping to mariadb to make sure it is working (ctrl-c when done).
 
 Run the command:
 
@@ -270,11 +270,11 @@ Run the command:
 cat /var/www/html/config/config.php
 ```
 
-4.  Lets make sure our simple web application works open up a web browser and go to (remember that we mapped localhost port 80 to port 80 inside of the container when we ran the run command):
+4.  Let's make sure our simple web application works. Open up a web browser and go to (remember that we mapped localhost port 80 to port 80 inside of the container when we ran the run command) the following site:
 
 http://student<#>.kubernetes.lab/applications.html
 
-5. Enter in information in the web app and then select "submit".    You should get the message "Thanks for your application!" which verifies we have written data to the database.
+5. Enter in information in the web app and then select "submit".  You should get the message "Thanks for your application!" which verifies we have written data to the database.
 
 
 You have now built two containers that are connected to the network.  Please exit the containers by pressing ctrl a+d.
