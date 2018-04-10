@@ -1,5 +1,5 @@
 # Installing Kubernetes
-This guide will step you through the process of configuring a single node Kubernetes cluster and installing Calico as the CNI and Traefik as the Ingress controller.
+This guide will provide you step-by-step instructions on the process of configuring a single node Kubernetes cluster and installing Calico as the CNI and Traefik as the Ingress controller.
 
 
 ## Installing Docker and Kubernetes (STECH class, skip this section!!!)
@@ -73,7 +73,7 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-You have a cluster!  Lets look at the pods that were deployed inside of the kube-system namespace!  Kube-system is the namespace for objects which help control and maintain the cluster.  Watch will automatically update your screen when changes occur.
+You have a cluster!  Let's look at the pods that were deployed inside of the kube-system namespace!  Kube-system is the namespace for objects which help control and maintain the cluster.  Watch will automatically update your screen when changes occur.
 
 Run the command:
 
@@ -95,7 +95,7 @@ kube-scheduler-kube-test            1/1       Running   0          3mvvkvvfdbnc
 
 Press ctrl-c to break from this screen.
 
-After about a minute all the pods will be deployed except for DNS, why is DNS not working?  
+After about a minute all the pods will be deployed except for DNS. Why is DNS not working?  
 
 Let's look at the events to get an idea why it is failing.
 
@@ -114,7 +114,7 @@ Events:
   Warning  FailedScheduling  2s (x18 over 4m)  default-scheduler  0/1 nodes are available: 1 node(s) were not ready.
 ```
 
-Lets look at the logs.
+Let's look at the logs.
 
 ```
 tail /var/log/messages
@@ -139,7 +139,7 @@ kubectl apply -f https://docs.projectcalico.org/v2.6/getting-started/kubernetes/
 ```
 
 
-Next we need to configure Ingress.  This is how traffic will get into our cluster from the outside world.
+Next, we need to configure Ingress.  This is how traffic will get into our cluster from the outside world.
 
 Run the command:
 
@@ -172,7 +172,7 @@ kube-scheduler-student2.kubernetes.lab            1/1       Running   0         
 traefik-ingress-controller-nc5s5                  1/1       Running   0          15h
 ```
 
-Make sure all are running before continuing.  If you want to get more information about a specific pods you can use the describe and logs feature on the pod to get more information.
+Make sure all are running before continuing.  If you want to get more information about specific pods you can use the describe and logs feature on the pod to get more information.
 
 Run the command:
 ```
