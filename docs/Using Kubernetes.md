@@ -1,6 +1,5 @@
 # Using Kubernetes
-
-In this lab, we will be deploying the containers we made in the Docker lab to Kubernetes.  We will be using images posted in Docker hub specifically for this class made using the same process.  For both Apache and Mariadb a service and pod will be created.  For Apache an Ingress will be created in order to access the services from outside of the network.  Finally we will demonstrate rolling updates and how you can use Kubernetes to manage multiple versions of the software.
+In this lab, we will be deploying the containers we made in the Docker lab to Kubernetes.  We will be using images posted in Docker hub specifically for this class made using the same process.  For both Apache and Mariadb, a service and pod will be created.  For Apache an Ingress will be created in order to access the services from outside of the network.  Finally, we will demonstrate rolling updates and how you can use Kubernetes to manage multiple versions of the software.
 
 ## To start this lab
 
@@ -14,7 +13,7 @@ ls -la
 ```
 
 ## Deploy Database Service    
-In order for containers to communicate they must talk through a service.  In this design our web pods need to be able to communicate with our database container so they need a service IP.  Each host is running a container called "kube-proxy".  Kube-proxy's role is to intercept requests going to the service IPs and send them to the correct pods.  This service also performs load balancing.
+In order for containers to communicate they must talk through a service.  In this design, our web pods need to be able to communicate with our database container so they need a service IP.  Each host is running a container called "kube-proxy".  Kube-proxy's role is to intercept requests going to the service IPs and send them to the correct pods.  This service also performs load balancing.
 
 Some notes:
 1. The name of the service is important as this is the name that containers will lookup to find the service IP.  Kubernetes runs a DNS server container called kube-dns.  Each service name can been looked up using this with the service name.
@@ -61,7 +60,7 @@ kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP    6h
 
 ## Deploy Database Pod
 
-First we need to create a Deployment.  A deployment will create an additional replicaset which will contain a single pod (replicas are one in this case).  This pod only has a single container which is the database Docker container from Docker hub (it is the same as we created in the Docker training).  There are a few things to point out in this file:
+First, we need to create a Deployment.  A deployment will create an additional replicaset which will contain a single pod (replicas are one in this case).  This pod only has a single container which is the database Docker container from Docker hub (it is the same as we created in the Docker training).  There are a few things to point out in this file:
 1. We are creating a label with the key "app" and the value of dbtraining.  We do this so we can refer to this deployment and pods in other yaml files.  For example, the service will point to the pods with this tag.  The tags can be anything, 
 2. In the containers, we are setting the environment variables like we did in Docker.  These are set by the container image itself.  Because we started with the mariadb container these are available to us as options.
 3. In the image setting we are pulling from Docker Hub and the version is version 1.  We can use this for configuration management.
@@ -119,7 +118,7 @@ Run the command:
 kubectl apply -f db_pod.yml
 ```   
 
-To view the status of this, we can look at a few things.  We see that a deployment has been created.  There is a desired one replica in this deployment (which we set).  Currently there is one configured (which is good).
+To view the status of this, we can look at a few things.  We see that a deployment has been created.  There is a desired one replica in this deployment (which we set).  Currently, there is one configured (which is good).
 
 Run the command:
 
@@ -193,7 +192,7 @@ kubectl exec -it <name of pod> bash
   
 
 ## Deploy configuration Map
-If you remember when we created our Docker application the php application had a configuration file in it containing information to connect to the database.  While it is possible to have preset all these values in the Docker container that is not a good idea because our passwords are now in the Docker container that is public on Docker hub which anyone can view.  We also changed the hostname (we used mariadb in Docker, we are now using db-service in our service).  We could have also created scripts that set environment variables to fix these similiar to what was done in the MariaDB containers.    Instead of using those two options, we will use a Kubernetes configmap.  When the container is created we will use this to mount a volume which contains these files over what is currently in the container.  This configmap only specifies a single file called config.php.  Here we specify our service name, and password.  This configmap will then be attached to the volume and then mounted in the container.
+If you remember when we created our Docker application the php application had a configuration file in it containing information to connect to the database.  While it is possible to have preset all these values in the Docker container that is not a good idea because our passwords are now in the Docker container that is public on Docker hub which anyone can view.  We also changed the hostname (we used mariadb in Docker, we are now using db-service in our service).  We could have also created scripts that set environment variables to fix these similiar to what was done in the MariaDB containers.    Instead of using those two options, we will use a Kubernetes configmap.  When the container is created we will use this to mount a volume which contains these files over what is currently in the container.  This configmap only specifies a single file called config.php.  Here we specify our service name and password.  This configmap will then be attached to the volume and then mounted in the container.
 
 File:
 
@@ -258,8 +257,8 @@ Now we will deploy the web pods.  This is similar to the database pods we create
 
 1. Our replicaset will have two pods deployed instead of one this time.  Requests to the service IP will then be load balanced to one of these two.
 2. Our image again is version 1, in this class we will update to version 2 in a later step.
-3. We have a liveness probe and readiness probe. These are critical for properly handling failure of pods, updating of pods and more.  The readiness probe will be how Kubernetes know when the the pod is ready to service requests.  Kubernetes will not forward traffic to this pod until the readiness check comes back correctly.  The Liveness probe is run after the readiness probe comes back.  When Kubernetes senses a failure it will stop sending traffic to the pod, then delete the pod and recreate a new one in hopes that this will solve any issues.
-4. There is a volume and volume mount indicated which is our configmap.  The volume is made available to the pod and then this volume gets mounted to a directory inside of out container using the volume mount.
+3. We have a liveness probe and readiness probe. These are critical for properly handling failure of pods, updating of pods, and more.  The readiness probe will be how Kubernetes know when the the pod is ready to service requests.  Kubernetes will not forward traffic to this pod until the readiness check comes back correctly.  The Liveness probe is run after the readiness probe comes back.  When Kubernetes senses a failure it will stop sending traffic to the pod, then delete the pod and recreate a new one in hopes that this will solve any issues.
+4. There is a volume and volume mount indicated which is our configmap.  The volume is made available to the pod and then this volume gets mounted to a directory inside of our container using the volume mount.
 
 File:
 
@@ -358,7 +357,7 @@ metadata:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  #This reverse web proxy will look for requests looking for a specific host name so that you can host multiple sites on the same cluster all on port 80.  Therefore it is necessary to have a proper DNS record pointed to your system.  For the class this has been done for you.
+  #This reverse web proxy will look for requests looking for a specific host name so that you can host multiple sites on the same cluster all on port 80.  Therefore it is necessary to have a proper DNS record pointed to your system.  For the class, this has been done for you.
   - host: <Enter in Fully Qualified Domain here i.e. student#.kubernetes.lab>
     http:
       paths:
@@ -368,7 +367,7 @@ spec:
           servicePort: 80
 ```
 
-Run the command
+Run the command:
 ```
 kubectl apply -f ingress.yaml
 ```
@@ -392,7 +391,7 @@ kubectl scale deployment webtraining --replicas=4
 kubectl get pods
 ```
 
-Lets scale it back down to two for now.
+Let's scale it back down to two for now.
 
 Run the commands:
 
@@ -402,9 +401,9 @@ kubectl scale deployment webtraining --replicas=2
 
 
 ## Rolling Updates
-This is coolest feature of Kubernetes, period. I saw this in a presentation and it the primary reason I wanted to learn Kubernetes. 
+This is coolest feature of Kubernetes, period. I saw this in a presentation and it's the primary reason I wanted to learn Kubernetes. 
 
-First we want to prove that this works.  Open up a new terminal and run this loop command and leave it running so you can see it.  What you should see is a message showing that we are running version 1 of the container as well as the container name.  Because we have two containers and the load balancer is alternating between the two you should see it bouncing back and forth between them.  You will need to change the test.lohin.lan to the dns name that was provided to you.
+First, we want to prove that this works.  Open up a new terminal and run this loop command and leave it running so you can see it.  What you should see is a message showing that we are running version 1 of the container as well as the container name.  Because we have two containers and the load balancer is alternating between the two you should see it bouncing back and forth between them.  You will need to change the test.lohin.lan to the dns name that was provided to you.
 
 Run the command:
 ```
@@ -420,7 +419,7 @@ This is version 1 webtraining-8688bf8894-7bxv4
 This is version 1 webtraining-8688bf8894-xlz9z
 ```
 
-Now lets update the container.  This will create a new replicaset then start a new pod. Kubernetes will then make sure it is ready (remember that we set the readiness probe) and then being forwarding traffic to it.  Once this occurs, it will delete and old container and then move on to the next one until we have our desired number of pods set in our deployment file (2 in our case)
+Now let's update the container.  This will create a new replicaset then start a new pod. Kubernetes will then make sure it is ready (remember that we set the readiness probe) and then forwarding traffic to it.  Once this occurs, it will delete an old container and then move on to the next one until we have our desired number of pods set in our deployment file (2 in our case).
 
 ```
 kubectl set image deployment/webtraining webtraining=dlohin/stechtraining_web:2
@@ -453,7 +452,7 @@ This is version 2 webtraining-6677c8b95f-vhwq6
 This is version 2 webtraining-6677c8b95f-spcpl
 ```
 
-You can view the rollout history to see how we updated this
+You can view the rollout history to see how we updated this.
 
 Run the command:
 
@@ -470,7 +469,7 @@ REVISION  CHANGE-CAUSE
 2         <none>
 ```
 
-Lets look at our replicasets.  You can see we now have two replicasets.  The old replicaset now has a desired number of zero, so it running no pods and our new replicaset has taken it's place. 
+Let's look at our replicasets.  You can see we now have two replicasets.  The old replicaset now has a desired number of zero, so it's running no pods and our new replicaset has taken it's place. 
 
 NOTE: rs in this is a shortcut for replicaset, now that you are getting good, I will show you this shortcut.   
 
@@ -507,4 +506,4 @@ webtraining-8688bf8894   2         2         2         31m
 ```
 
 
-Hopefully this gives you and idea of the power of Kubernetes.  One issue that we have at this point is that our MySQL database data will be lost when we destroy the container.  There are a number of ways to solve this issue using volumes and a storage provider but we didn't configure that in this lab.  Keeping software separate from data is a central tenant to Kubernetes.
+Hopefully this gives you an idea of the power of Kubernetes.  One issue that we have at this point is that our MySQL database data will be lost when we destroy the container.  There are a number of ways to solve this issue using volumes and a storage provider, but we didn't configure that in this lab.  Keeping software separate from data is a central tenant to Kubernetes.
