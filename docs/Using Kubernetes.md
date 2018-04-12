@@ -1,4 +1,5 @@
 # Using Kubernetes
+
 In this lab, we will be deploying the containers we made in the Docker lab to Kubernetes.  We will be using images posted in Docker hub specifically for this class made using the same process.  For both Apache and Mariadb a service and pod will be created.  For Apache an Ingress will be created in order to access the services from outside of the network.  Finally we will demonstrate rolling updates and how you can use Kubernetes to manage multiple versions of the software.
 
 ## To start this lab
