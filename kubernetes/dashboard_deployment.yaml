@@ -166,7 +166,7 @@ spec:
   selector:
     k8s-app: kubernetes-dashboard
     
-
+---
 # ---------------- Ingress Rule (traefik)------------------ #
 apiVersion: extensions/v1beta1
 kind: Ingress
