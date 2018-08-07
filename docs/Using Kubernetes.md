@@ -507,3 +507,31 @@ webtraining-8688bf8894   2         2         2         31m
 
 
 Hopefully this gives you an idea of the power of Kubernetes.  One issue that we have at this point is that our MySQL database data will be lost when we destroy the container.  There are a number of ways to solve this issue using volumes and a storage provider, but we didn't configure that in this lab.  Keeping software separate from data is a central tenant to Kubernetes.
+
+## Dashboard 
+
+Remember earlier, when we said that we could deploy a whole directory with one kubectl command? 
+
+We can do the alternative version of doing so by putting all of the information into one yaml file. 
+
+Check out the dashboard_deployment.yaml
+
+```
+cat dashboard_deployment.yaml
+```
+
+Within the file, we can see that the secret,  service account, deployment, ingress and other  kubernetes objects exist within the file 
+
+File NOTE: you need to modify the host value here!!!!!  It needs to be student#.kubernetes.lab.
+
+After you modified the host value, Run the command: 
+
+```
+kubectl apply -f dashboard_deployment.yaml
+```
+
+Let's navigate to http://student#.kubernetes.lab/kubernetes-ui/  (replace the '#' with your student name) and voilà! We have a Dashboard
+
+Kubernetes Dashboard is a web-based GUI that allows us to deploy containizered applications to your cluster from a click of a button. But where's the fun in doing that? 
+
+
