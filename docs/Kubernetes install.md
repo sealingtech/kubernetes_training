@@ -90,7 +90,7 @@ kube-apiserver-kube-test            1/1       Running   0          3m
 kube-controller-manager-kube-test   1/1       Running   0          3m
 kube-dns-86f4d74b45-qmxcj           0/3       Pending   0          4m
 kube-proxy-2ttjw                    1/1       Running   0          4m
-kube-scheduler-kube-test            1/1       Running   0          3mvvkvvfdbnc
+kube-scheduler-kube-test            1/1       Running   0          3m
 ```
 
 Press ctrl-c to break from this screen.
